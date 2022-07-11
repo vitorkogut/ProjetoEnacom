@@ -43,5 +43,31 @@ router.post('/novoProduto', async function(request,response){
     }
 });
 
+router.get('/pesquisaProduto', async function(request,response){
+    var query = request.query // valores passados pelo front
+    var filtro = {} // Json utilizado para gerar o filtro
+    
+    if(query.disponivel){
+        if(query.disponivel == 'true'){
+            filtro.disponivel = true
+        }else{
+            filtro.disponivel = false
+        }
+    } 
+    if(query.tipo){
+        filtro.tipo = query.tipo
+    }  
+    if(query.loja){
+        filtro.loja = query.loja
+    }
+    var result = await produtoModel.find(filtro)
+
+    if(result.length > 0){
+        response.send(200,result)
+    }else{
+        response.send(204,{Error:"Nenhum item encontrado!"})
+    }
+    
+})
 
 module.exports = router;
