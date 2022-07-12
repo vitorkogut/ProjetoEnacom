@@ -48,7 +48,10 @@ router.post('/addIten', async function(request,response){
     response.send(200,carrinhoAtualizado) // caso seja um novo carrinho manda o ID dele
 });
 
-
+router.post('/modifyIten', async function(request,response){
+    await itenModel.updateOne({_id:request.query.id}, {$set:{qtn:request.query.qtn, data_adicao:Date.now()}})
+    response.send(200)
+});
 
 module.exports = router;
 module.exports.model = itenModel;

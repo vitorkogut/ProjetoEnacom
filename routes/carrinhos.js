@@ -28,8 +28,9 @@ router.post('/deleteCarrinho', async function(request,response){
 router.get('/getCarrinho', async function(request,response){
     var query = request.query // valores passados pelo front
     var result = await carrinhoModel.findById(query.id)
-    response.send(200,result)
-    
+    var itens_do_carrinho = await itenModel.find({carrinho:query.id})
+    var retorno = {carrinho:result, itens:itens_do_carrinho};
+    response.send(200,retorno)
 })
 
 async function novoCarrinho(user){
