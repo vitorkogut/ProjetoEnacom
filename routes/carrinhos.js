@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
-var mongoose = require('mongoose')
+var mongoose = require('mongoose');
+const produtoModel = require('./produtos');
 
 // CONECTION
 mongoose.connect("mongodb://localhost:27017/Enacom")
@@ -30,7 +31,7 @@ router.get('/getCarrinho', async function(request,response){
     
 })
 
-async function newCarrinho(user){
+async function novoCarrinho(user){
     var novoCarrinho = new carrinhoModel({
         user: mongoose.Types.ObjectId(user),
         qtn_itens : 0,
@@ -41,9 +42,22 @@ async function newCarrinho(user){
     return result._id;
 }
 
-async function updateCarrinho(carrinho){
-    
+async function updateCarrinho(carrinho,itens){
+    var qtn_de_itens = 0;
+    var valor_total = 0.0;
+    //console.log(itens)
+    for(const iten of itens){
+        qtn_de_itens = qtn_de_itens + iten.qtn;
+        var produto = await produtoModel.findById(iten.iten)
+        var preco_un = produto.valor;
+        valor_total = valor_total + (iten.qtn * preco_un)
+    };
+
+    await carrinhoModel.updateOne({_id:carrinho}, {$set:{qtn_itens:qtn_de_itens, valor_total:valor_total}})
+    var carrinhoAtualizado = await carrinhoModel.findById(carrinho)
+    return carrinhoAtualizado;
 }
 
 module.exports = router;
-module.exports = newCarrinho;
+module.exports.novoCarrinho = novoCarrinho;
+module.exports.updateCarrinho = updateCarrinho;

@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
-const newCarrinho = require('./carrinhos');
-var Carrinho = require("./carrinhos")
+var novoCarrinho = require("./carrinhos.js").novoCarrinho;
+var updateCarrinho = require("./carrinhos.js").updateCarrinho;
 
 // CONECTION
 mongoose.connect("mongodb://localhost:27017/Enacom")
@@ -25,7 +25,6 @@ router.post('/deleteIten', async function(request,response){
 
 router.post('/addIten', async function(request,response){
     var dados = request.body
-    var novoCarrinho = false
 
     if(!dados.user || !dados.qtn || !dados.iten){ // verifica se falta algum dado
         response.send(400, {"ERROR":"Faltam dados!"})
@@ -33,8 +32,7 @@ router.post('/addIten', async function(request,response){
     }
 
     if(!dados.carrinho){ // caso não seja passado um carrinho, um novo é gerado para o usuario
-        dados.carrinho = await newCarrinho(dados.user)
-        novoCarrinho = true
+        dados.carrinho = await novoCarrinho(dados.user)
     }
     
     var itemToAdd = new itenModel({
@@ -43,12 +41,11 @@ router.post('/addIten', async function(request,response){
         iten:dados.iten
     })
     await itemToAdd.save()
-    if(novoCarrinho){
-        response.send(200,{carrinho:dados.carrinho})
-    }else{
-        response.send(200)
-    }
-    
+
+    var itens_do_carrinho = await itenModel.find({'carrinho':dados.carrinho}) // pega os itens do carrinho para dar update nele
+    var carrinhoAtualizado = await updateCarrinho(dados.carrinho,itens_do_carrinho)
+
+    response.send(200,carrinhoAtualizado) // caso seja um novo carrinho manda o ID dele
 });
 
 
