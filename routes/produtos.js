@@ -71,4 +71,4 @@ router.get('/pesquisaProduto', async function(request,response){
 })
 
 module.exports = router;
-module.exports = produtoModel;
+module.exports.model = produtoModel;

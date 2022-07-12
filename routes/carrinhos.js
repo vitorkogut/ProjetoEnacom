@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
-const produtoModel = require('./produtos');
+const produtoModel = require('./produtos').model;
+const itenModel = require('./itens').model
 
 // CONECTION
 mongoose.connect("mongodb://localhost:27017/Enacom")
@@ -20,14 +21,14 @@ var carrinhoModel = mongoose.model("carrinho",carrinhoSchema)
 /* ROUTES */
 router.post('/deleteCarrinho', async function(request,response){
     await carrinhoModel.deleteOne({_id:request.query.id})
+    await itenModel.deleteMany({carrinho:request.query.id})
     response.send(200)
 });
 
 router.get('/getCarrinho', async function(request,response){
     var query = request.query // valores passados pelo front
-    var filtro = {} // Json utilizado para gerar o filtro
-    
-   // TODO
+    var result = await carrinhoModel.findById(query.id)
+    response.send(200,result)
     
 })
 
@@ -52,12 +53,11 @@ async function updateCarrinho(carrinho,itens){
         var preco_un = produto.valor;
         valor_total = valor_total + (iten.qtn * preco_un)
     };
-
     await carrinhoModel.updateOne({_id:carrinho}, {$set:{qtn_itens:qtn_de_itens, valor_total:valor_total}})
     var carrinhoAtualizado = await carrinhoModel.findById(carrinho)
     return carrinhoAtualizado;
 }
 
 module.exports = router;
-module.exports.novoCarrinho = novoCarrinho;
-module.exports.updateCarrinho = updateCarrinho;
+exports.novoCarrinho = novoCarrinho;
+exports.updateCarrinho = updateCarrinho;
